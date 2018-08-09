@@ -1,6 +1,7 @@
 package com.mirror.helper;
 
 import com.mirror.wrapping.Unwrapper;
+import com.mirror.wrapping.Wrapper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,9 +10,11 @@ import java.util.List;
 
 public class InvocationHelper {
 
+    private final Wrapper mWrapper;
     private final Unwrapper mUnwrapper;
 
-    public InvocationHelper(Unwrapper unwrapper) {
+    public InvocationHelper(Wrapper wrapper, Unwrapper unwrapper) {
+        mWrapper = wrapper;
         mUnwrapper = unwrapper;
     }
 
@@ -49,7 +52,6 @@ public class InvocationHelper {
         method.setAccessible(true);
         Object result = method.invoke(instance, unwrappedParameters);
 
-        // TODO: WRAP
-        return result;
+        return mWrapper.wrap(result);
     }
 }
