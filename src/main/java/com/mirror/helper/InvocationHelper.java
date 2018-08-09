@@ -3,6 +3,7 @@ package com.mirror.helper;
 import com.mirror.wrapping.Unwrapper;
 import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.Wrapper;
+import com.mirror.wrapping.WrappingException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,7 +48,7 @@ public class InvocationHelper {
         return targetClass.getMethod(methodName, parameterTypes);
     }
 
-    public Object invokeMirrorMethod(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException {
+    public Object invokeMirrorMethod(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException, WrappingException {
         Object[] unwrappedParameters = unwrapParameters(parameters);
 
         method.setAccessible(true);

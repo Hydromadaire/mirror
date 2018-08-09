@@ -2,6 +2,7 @@ package com.mirror;
 
 import com.mirror.helper.InvocationHelper;
 import com.mirror.wrapping.UnwrappingException;
+import com.mirror.wrapping.WrappingException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +37,7 @@ public class MirrorInvocationHandler implements InvocationHandler {
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
             return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, args);
-        } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
             // TODO: THROW INNER EXCEPTION IF DEFINED IN THROWS
