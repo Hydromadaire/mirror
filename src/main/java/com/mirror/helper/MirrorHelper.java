@@ -9,6 +9,10 @@ public class MirrorHelper {
     }
 
     public String getMirroredTypeName(Class<?> type) {
+        if (!isMirror(type)) {
+            throw new IllegalArgumentException("type not a mirror: " + type.getName());
+        }
+
         MirroredClass mirroredClass = type.getAnnotation(MirroredClass.class);
         return mirroredClass.value();
     }
