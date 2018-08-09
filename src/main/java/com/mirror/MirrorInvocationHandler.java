@@ -32,7 +32,7 @@ public class MirrorInvocationHandler implements InvocationHandler {
 
     public Object invokeMethod(Method method, Object[] args) throws Throwable {
         try {
-            String mirroredMethodName = getMirroredMethodName(method);
+            String mirroredMethodName = method.getName();
             Method mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
@@ -40,12 +40,7 @@ public class MirrorInvocationHandler implements InvocationHandler {
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
-            // TODO: THROW INNER EXCEPTION IF DEFINED IN THROWS
             throw e.getCause();
         }
-    }
-
-    private String getMirroredMethodName(Method method) {
-        return method.getName();
     }
 }
