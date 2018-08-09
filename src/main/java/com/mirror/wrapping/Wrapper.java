@@ -1,8 +1,16 @@
 package com.mirror.wrapping;
 
+import com.mirror.helper.MirrorHelper;
+
 import java.lang.reflect.Array;
 
 public class Wrapper {
+
+    private MirrorHelper mMirrorHelper;
+
+    public Wrapper(MirrorHelper mirrorHelper) {
+        mMirrorHelper = mirrorHelper;
+    }
 
     public Object wrap(Object object) {
         if (object == null) {
@@ -34,7 +42,14 @@ public class Wrapper {
     }
 
     public Object wrapObject(Object object) {
-        // TODO: IF A WRAPPABLE CLASS: WRAP
+        if (mMirrorHelper.isMirror(object.getClass())) {
+            return createMirror(object);
+        }
+
         return object;
+    }
+
+    private Object createMirror(Object object) {
+        return null;
     }
 }

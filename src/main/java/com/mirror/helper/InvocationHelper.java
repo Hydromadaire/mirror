@@ -1,6 +1,7 @@
 package com.mirror.helper;
 
 import com.mirror.wrapping.Unwrapper;
+import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.Wrapper;
 
 import java.lang.reflect.InvocationTargetException;
@@ -18,7 +19,7 @@ public class InvocationHelper {
         mUnwrapper = unwrapper;
     }
 
-    public Object[] unwrapParameters(Object... parameters) {
+    public Object[] unwrapParameters(Object... parameters) throws UnwrappingException {
         List<Object> unwrappedParameters = new ArrayList<Object>();
 
         for (Object parameter : parameters) {
@@ -29,7 +30,7 @@ public class InvocationHelper {
         return unwrappedParameters.toArray();
     }
 
-    public Class<?>[] unwrapParameterTypes(Method method) {
+    public Class<?>[] unwrapParameterTypes(Method method) throws UnwrappingException {
         List<Class<?>> parameterTypes = new ArrayList<Class<?>>();
 
         for (Class<?> type : method.getParameterTypes()) {
@@ -41,12 +42,12 @@ public class InvocationHelper {
         return parameterTypes.toArray(parameterTypesArr);
     }
 
-    public Method findMirrorMethod(Method method, String methodName, Class<?> targetClass) throws NoSuchMethodException {
+    public Method findMirrorMethod(Method method, String methodName, Class<?> targetClass) throws NoSuchMethodException, UnwrappingException {
         Class<?>[] parameterTypes = unwrapParameterTypes(method);
         return targetClass.getMethod(methodName, parameterTypes);
     }
 
-    public Object invokeMirrorMethod(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException {
+    public Object invokeMirrorMethod(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException {
         Object[] unwrappedParameters = unwrapParameters(parameters);
 
         method.setAccessible(true);

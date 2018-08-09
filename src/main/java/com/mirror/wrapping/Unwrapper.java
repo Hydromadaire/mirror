@@ -1,12 +1,23 @@
 package com.mirror.wrapping;
 
+import com.mirror.MirrorInvocationHandler;
+import com.mirror.helper.MirrorHelper;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 public class Unwrapper {
 
-    public Object unwrap(Object object) {
+    private MirrorHelper mMirrorHelper;
+    private ClassLoader mClassLoader;
+
+    public Unwrapper(MirrorHelper mirrorHelper, ClassLoader classLoader) {
+        mMirrorHelper = mirrorHelper;
+        mClassLoader = classLoader;
+    }
+
+    public Object unwrap(Object object) throws UnwrappingException {
         if (object == null) {
             return null;
         }
@@ -18,7 +29,7 @@ public class Unwrapper {
         return unwrapObject(object);
     }
 
-    public Object unwrapArray(Object array) {
+    public Object unwrapArray(Object array) throws UnwrappingException {
         Class<?> componentType = array.getClass().getComponentType();
         if (componentType.isPrimitive()) {
             return array;
@@ -40,13 +51,16 @@ public class Unwrapper {
     public Object unwrapObject(Object object) {
         if (Proxy.isProxyClass(object.getClass())) {
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(object);
-            // TODO: IF OUR INVOCATION HANDLER, RETURN INSTANCE FROM WITHIN IT
+
+            if (invocationHandler instanceof MirrorInvocationHandler) {
+                return ((MirrorInvocationHandler) invocationHandler).getTargetInstance();
+            }
         }
 
         return object;
     }
 
-    public Class<?> unwrapType(Class<?> type) {
+    public Class<?> unwrapType(Class<?> type) throws UnwrappingException {
         if (type.isPrimitive()) {
             return type;
         }
@@ -63,8 +77,20 @@ public class Unwrapper {
         return Array.newInstance(componentType, 0).getClass();
     }
 
-    public Class<?> unwrapObjectType(Class<?> type) {
-        // TODO: IF THE CLASS IS A MIRROR, FIND THE MIRRORED CLASS
-        return type;
+    public Class<?> unwrapObjectType(Class<?> type) throws UnwrappingException {
+        try {
+            if (mMirrorHelper.isMirror(type)) {
+                return getMirrorType(type);
+            }
+
+            return type;
+        } catch (ClassNotFoundException e) {
+            throw new UnwrappingException(e);
+        }
+    }
+
+    private Class<?> getMirrorType(Class<?> type) throws ClassNotFoundException {
+        String typeName = mMirrorHelper.getMirroredTypeName(type);
+        return Class.forName(typeName, true, mClassLoader);
     }
 }
