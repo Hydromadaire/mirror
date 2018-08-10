@@ -10,7 +10,7 @@ public class Mirror<T> {
     private Class<T> mMirrorClass;
     private InvocationHelper mInvocationHelper;
 
-    public Mirror(Class<T> mirrorClass, Class<?> targetClass, InvocationHelper invocationHelper) {
+    Mirror(Class<T> mirrorClass, Class<?> targetClass, InvocationHelper invocationHelper) {
         mMirrorClass = mirrorClass;
         mTargetClass = targetClass;
         mInvocationHelper = invocationHelper;
