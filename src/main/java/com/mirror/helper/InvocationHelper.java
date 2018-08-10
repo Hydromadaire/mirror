@@ -45,7 +45,11 @@ public class InvocationHelper {
 
     public Method findMirrorMethod(Method method, String methodName, Class<?> targetClass) throws NoSuchMethodException, UnwrappingException {
         Class<?>[] parameterTypes = unwrapParameterTypes(method);
-        return targetClass.getMethod(methodName, parameterTypes);
+        try {
+            return targetClass.getDeclaredMethod(methodName, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            return targetClass.getMethod(methodName, parameterTypes);
+        }
     }
 
     public Object invokeMirrorMethod(Method method, Object instance, Class<?> returnType, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException, WrappingException {
