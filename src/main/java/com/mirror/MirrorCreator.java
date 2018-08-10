@@ -10,24 +10,28 @@ public class MirrorCreator {
     private final ClassLoader mClassLoader;
     private final MirrorHelper mMirrorHelper;
     private final InvocationHelper mInvocationHelper;
+    private final MirrorValidator mMirrorValidator;
 
-    public MirrorCreator(ClassLoader classLoader, MirrorHelper mirrorHelper, InvocationHelper invocationHelper) {
+    public MirrorCreator(ClassLoader classLoader, MirrorHelper mirrorHelper, InvocationHelper invocationHelper, MirrorValidator mirrorValidator) {
         mClassLoader = classLoader;
         mMirrorHelper = mirrorHelper;
         mInvocationHelper = invocationHelper;
+        mMirrorValidator = mirrorValidator;
     }
 
     private MirrorCreator(ClassLoader classLoader) {
         mClassLoader = classLoader;
         mMirrorHelper = new MirrorHelper();
         mInvocationHelper = new InvocationHelper(new Wrapper(mMirrorHelper, this), new Unwrapper(mMirrorHelper, mClassLoader));
+        mMirrorValidator = new MirrorValidator(mMirrorHelper);
     }
 
     public <T> Mirror<T> createMirror(Class<T> mirrorClass) throws MirrorCreationException {
         try {
+            mMirrorValidator.validateMirrorClass(mirrorClass);
             Class<?> targetClass = getTargetType(mirrorClass);
             return new Mirror<T>(mirrorClass, targetClass, mInvocationHelper);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException e) {
             throw new MirrorCreationException(e);
         }
     }
