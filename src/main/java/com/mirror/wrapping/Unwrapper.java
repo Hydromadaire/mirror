@@ -72,9 +72,11 @@ public class Unwrapper {
         return unwrapObjectType(type);
     }
 
-    public Class<?> unwrapArrayType(Class<?> type) {
+    public Class<?> unwrapArrayType(Class<?> type) throws UnwrappingException {
         Class<?> componentType = type.getComponentType();
-        return Array.newInstance(componentType, 0).getClass();
+        Class<?> unwrappedComponentType = unwrapType(componentType);
+
+        return Array.newInstance(unwrappedComponentType, 0).getClass();
     }
 
     public Class<?> unwrapObjectType(Class<?> type) throws UnwrappingException {
