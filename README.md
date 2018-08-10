@@ -20,7 +20,7 @@ private class SomeClass {
 ```
 the interface would be:
 
-```
+```Java
 @MirroredClass("com.package.SomeClass")
 public interface MirroredSomeClass {
     void hello();
