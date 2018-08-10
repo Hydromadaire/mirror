@@ -3,7 +3,7 @@
 Mirror as a reflection tool for Java. It allows usage of classes and objects via reflection without having to actually use the Java
 reflection API.
 
-# Examples
+# How to Use
 
 Instead of calling a class via reflection, all that is needed is to define an interface which represents the class.
 
