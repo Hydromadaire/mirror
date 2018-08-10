@@ -25,9 +25,10 @@ public class MirrorCreator {
 
     public <T> Mirror<T> createMirror(Class<T> mirrorClass) throws MirrorCreationException {
         try {
+            validateMirrorClass(mirrorClass);
             Class<?> targetClass = getTargetType(mirrorClass);
             return new Mirror<T>(mirrorClass, targetClass, mInvocationHelper);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException e) {
             throw new MirrorCreationException(e);
         }
     }
@@ -35,6 +36,16 @@ public class MirrorCreator {
     private Class<?> getTargetType(Class<?> mirrorClass) throws ClassNotFoundException {
         String targetTypeName = mMirrorHelper.getMirroredTypeName(mirrorClass);
         return Class.forName(targetTypeName, true, mClassLoader);
+    }
+
+    private void validateMirrorClass(Class<?> mirrorClass) {
+        if (!mMirrorHelper.isMirror(mirrorClass)) {
+            throw new ClassNotMirrorException(mirrorClass);
+        }
+
+        if (!mirrorClass.isInterface()) {
+            throw new MirrorValidationException("mirror should be an interface");
+        }
     }
 
     public static MirrorCreator createForClassLoader(ClassLoader classLoader) {
