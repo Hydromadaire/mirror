@@ -27,6 +27,10 @@ public class MirrorInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (args == null) {
+            args = new Object[0];
+        }
+
         return invokeMethod(method, args);
     }
 
