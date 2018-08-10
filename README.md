@@ -1,6 +1,6 @@
 # mirror
 
-Mirror as a reflection tool for Java. It allows usage of classes and objects via reflection without having to actually use the Java
+Mirror is a reflection tool for Java. It allows usage of classes and objects via reflection without having to actually use the Java
 reflection API.
 
 # How to Use
