@@ -23,7 +23,7 @@ the interface would be:
 ```Java
 @MirroredClass("com.package.SomeClass")
 public interface MirroredSomeClass {
-    void hello();
+    void hello(); // the signature of the method in SomeClass
 }
 ```
 
@@ -36,4 +36,9 @@ Mirror<MirroredSomeClass> mirror = mirrorCreator.create(MirroredSomeClass.class)
 
 Object someClassInstance = instance;// instance of hidden class
 MirroredSomeClass someClass = mirror.create(someClassInstance);
+```
+Now you can access the hidden class via the mirror, using the methods you have defined:
+
+```Java
+someClass.hello();
 ```
