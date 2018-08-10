@@ -30,10 +30,10 @@ public interface MirroredSomeClass {
 Now, we have to create the mirror object:
 
 ```Java
-ClassLoader classLoaderForHiddenClass = // some classloader;
+ClassLoader classLoaderForHiddenClass = classloader;// classloader which loads hidden class
 MirrorCreator mirrorCreator = MirrorCreator.createForClassLoader(classLoaderForHiddenClass);
 Mirror<MirroredSomeClass> mirror = mirrorCreator.create(MirroredSomeClass.class);
 
-Object someClassInstance = // instance;
+Object someClassInstance = instance;// instance of hidden class
 MirroredSomeClass someClass = mirror.create(someClassInstance);
 ```
