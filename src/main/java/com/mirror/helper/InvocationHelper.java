@@ -48,12 +48,12 @@ public class InvocationHelper {
         return targetClass.getMethod(methodName, parameterTypes);
     }
 
-    public Object invokeMirrorMethod(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException, WrappingException {
+    public Object invokeMirrorMethod(Method method, Object instance, Class<?> returnType, Object... parameters) throws InvocationTargetException, IllegalAccessException, UnwrappingException, WrappingException {
         Object[] unwrappedParameters = unwrapParameters(parameters);
 
         method.setAccessible(true);
         Object result = method.invoke(instance, unwrappedParameters);
 
-        return mWrapper.wrap(result);
+        return mWrapper.wrap(result, returnType);
     }
 }

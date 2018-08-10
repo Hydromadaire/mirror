@@ -36,7 +36,7 @@ public class MirrorInvocationHandler implements InvocationHandler {
             Method mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
-            return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, args);
+            return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, method.getReturnType(), args);
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {

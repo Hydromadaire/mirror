@@ -17,19 +17,23 @@ public class Wrapper {
         mMirrorCreator = mirrorCreator;
     }
 
-    public Object wrap(Object object) throws WrappingException {
+    public Object wrap(Object object, Class<?> wrappingTarget) throws WrappingException {
         if (object == null) {
             return null;
         }
 
         if (object.getClass().isArray()) {
-            return wrapArray(object);
+            if (!wrappingTarget.isArray()) {
+                throw new IllegalArgumentException("cannot wrap array to non-array type");
+            }
+
+            return wrapArray(object, wrappingTarget.getComponentType());
         }
 
-        return wrapObject(object);
+        return wrapObject(object, wrappingTarget);
     }
 
-    public Object wrapArray(Object array) throws WrappingException {
+    public Object wrapArray(Object array, Class<?> wrappingTarget) throws WrappingException {
         Class<?> componentType = array.getClass().getComponentType();
         if (componentType.isPrimitive()) {
             return array;
@@ -39,17 +43,17 @@ public class Wrapper {
         Object[] wrappedArrayObjects = (Object[]) Array.newInstance(componentType, arrayObjects.length);
 
         for (int i = 0; i < arrayObjects.length; i++) {
-            Object wrapped = wrap(arrayObjects[i]);
+            Object wrapped = wrap(arrayObjects[i], wrappingTarget);
             wrappedArrayObjects[i] = wrapped;
         }
 
         return wrappedArrayObjects;
     }
 
-    public Object wrapObject(Object object) throws WrappingException {
+    public Object wrapObject(Object object, Class<?> wrappingTarget) throws WrappingException {
         try {
-            if (mMirrorHelper.isMirror(object.getClass())) {
-                return createMirror(object);
+            if (mMirrorHelper.isMirror(wrappingTarget)) {
+                return createMirror(object, wrappingTarget);
             }
 
             return object;
@@ -58,8 +62,8 @@ public class Wrapper {
         }
     }
 
-    private Object createMirror(Object object) throws MirrorCreationException {
-        Mirror<?> mirror = mMirrorCreator.createMirror(object.getClass());
+    private Object createMirror(Object object, Class<?> mirrorClass) throws MirrorCreationException {
+        Mirror<?> mirror = mMirrorCreator.createMirror(mirrorClass);
         return mirror.create(object);
     }
 }
