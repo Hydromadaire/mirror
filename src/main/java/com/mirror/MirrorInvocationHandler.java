@@ -35,16 +35,52 @@ public class MirrorInvocationHandler implements InvocationHandler {
     }
 
     public Object invokeMethod(Method method, Object[] args) throws Throwable {
+        Method mirroredMethod = null;
+
         try {
             String mirroredMethodName = method.getName();
-            Method mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
+            mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
             return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, method.getReturnType(), args);
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
+            tryMirrorThrowable(e.getCause(), mirroredMethod);
             throw e.getCause();
+        }
+    }
+
+    private void tryMirrorThrowable(Throwable throwable, Method mirrorMethod) throws Throwable {
+        if (mirrorMethod.isAnnotationPresent(WrapException.class)) {
+            WrapException wrapException = mirrorMethod.getAnnotation(WrapException.class);
+            tryThrowWrappedException(throwable, wrapException.sourceType(), wrapException.destType());
+        }
+
+        if (throwable instanceof RuntimeException || throwable instanceof Error) {
+            throw throwable;
+        }
+
+        for (Class<?> declaredException : mirrorMethod.getExceptionTypes()) {
+            if (declaredException.isInstance(throwable)) {
+                throw throwable;
+            }
+        }
+    }
+
+    private void tryThrowWrappedException(Throwable throwable, Class<? extends Throwable> sourceType, Class<? extends Throwable> destType) throws Throwable {
+        if (sourceType.isInstance(throwable)) {
+            try {
+                Throwable wrapThrowable = destType.newInstance();
+                wrapThrowable.initCause(throwable);
+                throwable = wrapThrowable;
+            } catch (ReflectiveOperationException e) {
+                MirrorInvocationException invocationException = new MirrorInvocationException(e);
+                invocationException.addSuppressed(throwable);
+                throw invocationException;
+            }
+
+            throw throwable;
         }
     }
 }
