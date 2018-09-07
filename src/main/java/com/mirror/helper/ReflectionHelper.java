@@ -5,17 +5,19 @@ import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.Wrapper;
 import com.mirror.wrapping.WrappingException;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvocationHelper {
+public class ReflectionHelper {
 
     private final Wrapper mWrapper;
     private final Unwrapper mUnwrapper;
 
-    public InvocationHelper(Wrapper wrapper, Unwrapper unwrapper) {
+    public ReflectionHelper(Wrapper wrapper, Unwrapper unwrapper) {
         mWrapper = wrapper;
         mUnwrapper = unwrapper;
     }
@@ -57,6 +59,21 @@ public class InvocationHelper {
 
         method.setAccessible(true);
         Object result = method.invoke(instance, unwrappedParameters);
+
+        return mWrapper.wrap(result, returnType);
+    }
+
+    public Field findMirrorField(String fieldName, Class<?> targetClass) throws NoSuchFieldException {
+        try {
+            return targetClass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            return targetClass.getField(fieldName);
+        }
+    }
+
+    public Object getFieldValue(Field field, Object instance, Class<?> returnType) throws IllegalAccessException, WrappingException {
+        field.setAccessible(true);
+        Object result = field.get(instance);
 
         return mWrapper.wrap(result, returnType);
     }
