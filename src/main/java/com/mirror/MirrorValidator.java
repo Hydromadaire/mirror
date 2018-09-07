@@ -19,4 +19,10 @@ public class MirrorValidator {
             throw new MirrorValidationException("mirror should be an interface");
         }
     }
+
+    public void validateMirrorCreatorClass(Class<?> mirrorCreatorClass) {
+        if (!mirrorCreatorClass.isInterface()) {
+            throw new MirrorValidationException("mirror creator should be an interface");
+        }
+    }
 }

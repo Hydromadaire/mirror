@@ -16,4 +16,9 @@ public class MirrorHelper {
         MirroredClass mirroredClass = type.getAnnotation(MirroredClass.class);
         return mirroredClass.value();
     }
+
+    public Class<?> getMirrorTargetType(Class<?> mirrorClass, ClassLoader classLoader) throws ClassNotFoundException {
+        String targetTypeName = getMirroredTypeName(mirrorClass);
+        return Class.forName(targetTypeName, true, classLoader);
+    }
 }
