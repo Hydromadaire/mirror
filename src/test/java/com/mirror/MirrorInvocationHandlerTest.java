@@ -1,30 +1,33 @@
 package com.mirror;
 
 import com.mirror.helper.InvocationHelper;
+import com.mirror.wrapping.ThrowableWrapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class MirrorInvocationHandlerTest {
 
     private MirrorInvocationHandler mMirrorInvocationHandler;
     private InvocationHelper mInvocationHelper;
+    private ThrowableWrapper mThrowableWrapper;
     private Object mTargetInstance;
     private Class<?> mTargetClass;
 
     @Before
     public void setUp() throws Exception {
         mInvocationHelper = mock(InvocationHelper.class);
+        mThrowableWrapper = new ThrowableWrapper();
         mTargetClass = TargetClass.class;
         mTargetInstance = mock(TargetClass.class);
 
-        mMirrorInvocationHandler = new MirrorInvocationHandler(mInvocationHelper, mTargetClass, mTargetInstance);
+        mMirrorInvocationHandler = new MirrorInvocationHandler(mInvocationHelper, mThrowableWrapper, mTargetClass, mTargetInstance);
     }
 
     @Test
