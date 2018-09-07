@@ -77,4 +77,11 @@ public class ReflectionHelper {
 
         return mWrapper.wrap(result, returnType);
     }
+
+    public void setFieldValue(Field field, Object instance, Object value) throws UnwrappingException, IllegalAccessException {
+        field.setAccessible(true);
+
+        Object unwrappedValue = mUnwrapper.unwrap(value);
+        field.set(instance, unwrappedValue);
+    }
 }

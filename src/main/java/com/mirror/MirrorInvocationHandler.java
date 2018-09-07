@@ -36,6 +36,16 @@ public class MirrorInvocationHandler implements InvocationHandler {
             return getFieldValue(getField.value(), method.getReturnType());
         }
 
+        if (method.isAnnotationPresent(SetField.class)) {
+            if (args.length != 1) {
+                throw new MirrorFieldAccessException("Cannot set field with no argument");
+            }
+
+            SetField setField = method.getAnnotation(SetField.class);
+            setFieldValue(setField.value(), args[0]);
+            return null;
+        }
+
         return invokeMethod(method, args);
     }
 
@@ -46,6 +56,17 @@ public class MirrorInvocationHandler implements InvocationHandler {
             Object instance = Modifier.isStatic(field.getModifiers()) ? null : mTargetInstance;
             return mReflectionHelper.getFieldValue(field, instance, fieldReturnType);
         } catch (ReflectiveOperationException | WrappingException e) {
+            throw new MirrorFieldAccessException(e);
+        }
+    }
+
+    private void setFieldValue(String fieldName, Object value) {
+        try {
+            Field field = mReflectionHelper.findMirrorField(fieldName, mTargetClass);
+
+            Object instance = Modifier.isStatic(field.getModifiers()) ? null : mTargetInstance;
+            mReflectionHelper.setFieldValue(field, instance, value);
+        } catch (ReflectiveOperationException | UnwrappingException e) {
             throw new MirrorFieldAccessException(e);
         }
     }

@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -147,6 +148,22 @@ public class MirrorInvocationHandlerTest {
         assertEquals(FIELD_VALUE, result);
     }
 
+    @Test
+    public void invoke_methodIsSetField_setFieldValue() throws Throwable {
+        Method METHOD = TargetClass.class.getDeclaredMethod("setField", Object.class);
+        Object FIELD_VALUE = new Object();
+
+        Field mockField = mock(Field.class);
+
+        when(mReflectionHelper.findMirrorField(anyString(), any())).thenReturn(mockField);
+        when(mReflectionHelper.getFieldValue(any(), any(), any())).thenReturn(FIELD_VALUE);
+
+        Object result = mMirrorInvocationHandler.invoke(null, METHOD, new Object[] {FIELD_VALUE});
+        assertNull(result);
+
+        verify(mReflectionHelper, times(1)).setFieldValue(eq(mockField), any(), eq(FIELD_VALUE));
+    }
+
     private static class TargetClass {
 
         public void publicNoParam() {
@@ -185,6 +202,11 @@ public class MirrorInvocationHandlerTest {
         @GetField("field")
         public Object getField() {
             return null;
+        }
+
+        @SetField("field")
+        public void setField(Object value) {
+
         }
     }
 }

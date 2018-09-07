@@ -191,6 +191,22 @@ public class ReflectionHelperTest {
         verify(mWrapper, times(1)).wrap(RETURN, RETURN_TYPE);
     }
 
+    @Test
+    public void setFieldValue_correctParameters_correctFieldAccessDone() throws Exception {
+        Object INSTANCE = new Object();
+        Object VALUE = new Object();
+
+        when(mUnwrapper.unwrap(any())).thenReturn(VALUE);
+
+        Field mockField = mock(Field.class);
+
+        mReflectionHelper.setFieldValue(mockField, INSTANCE, VALUE);
+
+        verify(mockField, times(1)).setAccessible(true);
+        verify(mockField, times(1)).set(INSTANCE, VALUE);
+        verify(mUnwrapper, times(1)).unwrap(VALUE);
+    }
+
     private static class SomeClass {
 
         private Object field;
