@@ -104,9 +104,19 @@ import java.lang.reflect.Proxy;
  *          void callMe() throws SomeException;
  *
  *          // or with wrapping
- *          @WrapException(sourceType=SomeException.class, destType=MyException.class);
  *          void callMe() throws MyException;
+ *
+ *          // where MyException is define with similarly to this:
+ *          @MirroredException("com.package.SomeException")
+ *          public class MyException extends Exception {
+ *              public MyException() {
+ *
+ *              }
+ *          }
  *     }</pre>
+ *
+ *     An exception wrapper must be defined with either a default constructor or a <em>cause constructor</em> (constructor which receives a <code>Throwable</code>).
+ *     Either of this is necessary, for it to be used.
  * </p>
  * <p>
  *     Value wrapping and unwrapping is an automatic process done to values passed and returned from and to mirror methods. These processes
