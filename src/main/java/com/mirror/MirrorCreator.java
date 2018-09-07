@@ -6,6 +6,8 @@ import com.mirror.wrapping.ThrowableWrapper;
 import com.mirror.wrapping.Unwrapper;
 import com.mirror.wrapping.Wrapper;
 
+import java.lang.reflect.Proxy;
+
 public class MirrorCreator {
 
     private final ClassLoader mClassLoader;
@@ -40,9 +42,30 @@ public class MirrorCreator {
         }
     }
 
+    public <T> T createObjectFactory(Class<T> objectCreatorClass) throws ObjectFactoryCreationException {
+        try {
+            mMirrorValidator.validateObjectFactoryClass(objectCreatorClass);
+
+            Class<?> mirrorClass = mMirrorHelper.getObjectFactoryType(objectCreatorClass);
+            mMirrorValidator.validateMirrorClass(mirrorClass);
+
+            Class<?> targetClass = getTargetType(mirrorClass);
+            return createObjectFactoryProxy(objectCreatorClass, mirrorClass, targetClass);
+        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException | ClassNotObjectFactoryException e) {
+            throw new ObjectFactoryCreationException(e);
+        }
+    }
+
     private Class<?> getTargetType(Class<?> mirrorClass) throws ClassNotFoundException {
         String targetTypeName = mMirrorHelper.getMirroredTypeName(mirrorClass);
         return Class.forName(targetTypeName, true, mClassLoader);
+    }
+
+    private <T> T createObjectFactoryProxy(Class<T> objectCreatorClass, Class<?> mirrorClass, Class<?> targetClass) {
+        return objectCreatorClass.cast(Proxy.newProxyInstance(
+                objectCreatorClass.getClassLoader(),
+                new Class[] {objectCreatorClass},
+                new ObjectFactoryInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, mirrorClass)));
     }
 
     public static MirrorCreator createForClassLoader(ClassLoader classLoader) {

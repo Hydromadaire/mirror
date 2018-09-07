@@ -5,10 +5,10 @@ import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.Wrapper;
 import com.mirror.wrapping.WrappingException;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,5 +83,23 @@ public class ReflectionHelper {
 
         Object unwrappedValue = mUnwrapper.unwrap(value);
         field.set(instance, unwrappedValue);
+    }
+
+    public Constructor<?> findMirrorConstructor(Method method, Class<?> targetClass) throws UnwrappingException, NoSuchMethodException {
+        Class<?>[] parameterTypes = unwrapParameterTypes(method);
+        try {
+            return targetClass.getDeclaredConstructor(parameterTypes);
+        } catch (NoSuchMethodException e) {
+            return targetClass.getConstructor(parameterTypes);
+        }
+    }
+
+    public Object invokeMirrorConstructor(Constructor<?> constructor, Class<?> returnType, Object... parameters) throws UnwrappingException, IllegalAccessException, InvocationTargetException, InstantiationException, WrappingException {
+        Object[] unwrappedParameters = unwrapParameters(parameters);
+
+        constructor.setAccessible(true);
+        Object result = constructor.newInstance(unwrappedParameters);
+
+        return mWrapper.wrap(result, returnType);
     }
 }
