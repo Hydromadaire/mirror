@@ -4,7 +4,9 @@ import com.mirror.helper.InvocationHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -89,6 +91,36 @@ public class MirrorInvocationHandlerTest {
         verify(mInvocationHelper, times(1)).invokeMirrorMethod(METHOD, mTargetInstance, Object.class, PARAMS);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void invoke_runtimeThrownFromMethod_propagatesExceptionCorrectly() throws Throwable {
+        Method METHOD = TargetClass.class.getDeclaredMethod("publicReturnNoParam");
+
+        when(mInvocationHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
+        when(mInvocationHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new IllegalArgumentException()));
+
+        mMirrorInvocationHandler.invoke(null, METHOD, null);
+    }
+
+    @Test(expected = InterruptedException.class)
+    public void invoke_declaredExceptionThrownFromMethod_propagatesExceptionCorrectly() throws Throwable {
+        Method METHOD = TargetClass.class.getDeclaredMethod("publicExceptionDeclared");
+
+        when(mInvocationHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
+        when(mInvocationHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new InterruptedException()));
+
+        mMirrorInvocationHandler.invoke(null, METHOD, null);
+    }
+
+    @Test(expected = InterruptedException.class)
+    public void invoke_wrappableExceptionThrownFromMethod_wrapExceptionCorrectly() throws Throwable {
+        Method METHOD = TargetClass.class.getDeclaredMethod("wrapException");
+
+        when(mInvocationHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
+        when(mInvocationHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new IllegalArgumentException()));
+
+        mMirrorInvocationHandler.invoke(null, METHOD, null);
+    }
+
     private static class TargetClass {
 
         public void publicNoParam() {
@@ -105,6 +137,15 @@ public class MirrorInvocationHandlerTest {
 
         public Object publicReturnParam(Object param) {
             return null;
+        }
+
+        public Object publicExceptionDeclared() throws InterruptedException {
+            return null;
+        }
+
+        @WrapException(sourceType = IllegalArgumentException.class, destType = InterruptedException.class)
+        public void wrapException() {
+
         }
     }
 }
