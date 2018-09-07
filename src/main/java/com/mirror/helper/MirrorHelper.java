@@ -1,7 +1,7 @@
 package com.mirror.helper;
 
 import com.mirror.MirroredClass;
-import com.mirror.MirrorFactory;
+import com.mirror.MirrorCreator;
 
 public class MirrorHelper {
 
@@ -18,16 +18,16 @@ public class MirrorHelper {
         return mirroredClass.value();
     }
 
-    public boolean isMirrorFactory(Class<?> type) {
-        return type.isAnnotationPresent(MirrorFactory.class);
+    public boolean isMirrorCreator(Class<?> type) {
+        return type.isAnnotationPresent(MirrorCreator.class);
     }
 
-    public Class<?> getMirrorFactoryType(Class<?> type) {
-        if (!isMirrorFactory(type)) {
+    public Class<?> getMirrorCreatorType(Class<?> type) {
+        if (!isMirrorCreator(type)) {
             throw new IllegalArgumentException("type not a object factory: " + type.getName());
         }
 
-        MirrorFactory mirrorFactory = type.getAnnotation(MirrorFactory.class);
-        return mirrorFactory.value();
+        MirrorCreator mirrorCreator = type.getAnnotation(MirrorCreator.class);
+        return mirrorCreator.value();
     }
 }

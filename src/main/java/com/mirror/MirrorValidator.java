@@ -20,13 +20,13 @@ public class MirrorValidator {
         }
     }
 
-    public void validateMirrorFactoryClass(Class<?> mirrorFactoryClass) {
-        if (!mMirrorHelper.isMirrorFactory(mirrorFactoryClass)) {
-            throw new ClassNotMirrorFactoryException(mirrorFactoryClass);
+    public void validateMirrorCreatorClass(Class<?> mirrorCreatorClass) {
+        if (!mMirrorHelper.isMirrorCreator(mirrorCreatorClass)) {
+            throw new ClassNotMirrorCreatorException(mirrorCreatorClass);
         }
 
-        if (!mirrorFactoryClass.isInterface()) {
-            throw new MirrorValidationException("mirror factory should be an interface");
+        if (!mirrorCreatorClass.isInterface()) {
+            throw new MirrorValidationException("mirror creator should be an interface");
         }
     }
 }

@@ -2,7 +2,6 @@ package com.mirror.wrapping;
 
 import com.mirror.Mirror;
 import com.mirror.MirrorCreationException;
-import com.mirror.MirrorCreator;
 import com.mirror.helper.MirrorHelper;
 
 import java.lang.reflect.Array;
@@ -10,11 +9,11 @@ import java.lang.reflect.Array;
 public class Wrapper {
 
     private MirrorHelper mMirrorHelper;
-    private MirrorCreator mMirrorCreator;
+    private Mirror mMirror;
 
-    public Wrapper(MirrorHelper mirrorHelper, MirrorCreator mirrorCreator) {
+    public Wrapper(MirrorHelper mirrorHelper, Mirror mirror) {
         mMirrorHelper = mirrorHelper;
-        mMirrorCreator = mirrorCreator;
+        mMirror = mirror;
     }
 
     public Object wrap(Object object, Class<?> wrappingTarget) throws WrappingException {
@@ -63,7 +62,6 @@ public class Wrapper {
     }
 
     private Object createMirror(Object object, Class<?> mirrorClass) throws MirrorCreationException {
-        Mirror<?> mirror = mMirrorCreator.createMirror(mirrorClass);
-        return mirror.create(object);
+        return mMirror.mirror(mirrorClass, object);
     }
 }
