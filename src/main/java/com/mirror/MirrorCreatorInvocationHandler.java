@@ -1,5 +1,6 @@
 package com.mirror;
 
+import com.mirror.helper.MirrorHelper;
 import com.mirror.helper.ReflectionHelper;
 import com.mirror.wrapping.ThrowableWrapper;
 import com.mirror.wrapping.UnwrappingException;
@@ -14,14 +15,16 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
 
     private final ReflectionHelper mReflectionHelper;
     private final ThrowableWrapper mThrowableWrapper;
-    private final Class<?> mTargetClass;
-    private final Class<?> mMirrorClass;
+    private final MirrorHelper mMirrorHelper;
+    private final MirrorValidator mMirrorValidator;
+    private final ClassLoader mClassLoader;
 
-    public MirrorCreatorInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Class<?> mirrorClass) {
+    public MirrorCreatorInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, MirrorHelper mirrorHelper, MirrorValidator mirrorValidator, ClassLoader classLoader) {
         mReflectionHelper = reflectionHelper;
         mThrowableWrapper = throwableWrapper;
-        mTargetClass = targetClass;
-        mMirrorClass = mirrorClass;
+        mMirrorHelper = mirrorHelper;
+        mMirrorValidator = mirrorValidator;
+        mClassLoader = classLoader;
     }
 
     @Override
@@ -30,13 +33,28 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
             args = new Object[0];
         }
 
-        return invokeConstructor(method, args);
+        if (method.isAnnotationPresent(MirrorCreator.class)) {
+            return createMirror(method.getReturnType(), method, args);
+        }
+
+        throw new MirrorInvocationException(String.format("method %s has no invocation", method.getName()));
     }
 
-    private Object invokeConstructor(Method method, Object[] args) throws Throwable {
+    private Object createMirror(Class<?> mirrorClass, Method method, Object[] args) throws Throwable {
         try {
-            Constructor<?> constructor = mReflectionHelper.findMirrorConstructor(method, mTargetClass);
-            return mReflectionHelper.invokeMirrorConstructor(constructor, mMirrorClass, args);
+            mMirrorValidator.validateMirrorClass(mirrorClass);
+            Class<?> targetClass = mMirrorHelper.getMirrorTargetType(mirrorClass, mClassLoader);
+
+            return invokeConstructor(mirrorClass, targetClass, method, args);
+        } catch (ClassNotFoundException e) {
+            throw new MirrorInvocationException(new MirrorCreationException(e));
+        }
+    }
+
+    private Object invokeConstructor(Class<?> mirrorClass, Class<?> targetClass, Method method, Object[] args) throws Throwable {
+        try {
+            Constructor<?> constructor = mReflectionHelper.findMirrorConstructor(method, targetClass);
+            return mReflectionHelper.invokeMirrorConstructor(constructor, mirrorClass, args);
         } catch (UnwrappingException | WrappingException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {

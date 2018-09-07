@@ -22,12 +22,8 @@ public class MirrorHelper {
         return type.isAnnotationPresent(MirrorCreator.class);
     }
 
-    public Class<?> getMirrorCreatorType(Class<?> type) {
-        if (!isMirrorCreator(type)) {
-            throw new IllegalArgumentException("type not a object factory: " + type.getName());
-        }
-
-        MirrorCreator mirrorCreator = type.getAnnotation(MirrorCreator.class);
-        return mirrorCreator.value();
+    public Class<?> getMirrorTargetType(Class<?> mirrorClass, ClassLoader classLoader) throws ClassNotFoundException {
+        String targetTypeName = getMirroredTypeName(mirrorClass);
+        return Class.forName(targetTypeName, true, classLoader);
     }
 }

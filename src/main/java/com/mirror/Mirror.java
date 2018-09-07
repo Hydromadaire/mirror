@@ -35,7 +35,7 @@ public class Mirror {
     public <T> T mirror(Class<T> mirrorClass, Object instance) throws MirrorCreationException {
         try {
             mMirrorValidator.validateMirrorClass(mirrorClass);
-            Class<?> targetClass = getTargetType(mirrorClass);
+            Class<?> targetClass = mMirrorHelper.getMirrorTargetType(mirrorClass, mClassLoader);
 
             if (!targetClass.isInstance(instance)) {
                 throw new IllegalArgumentException("instance is not of targetClass type: " + targetClass.getName());
@@ -50,20 +50,10 @@ public class Mirror {
     public <T> T createMirrorCreator(Class<T> mirrorCreatorClass) throws MirrorCreatorCreationException {
         try {
             mMirrorValidator.validateMirrorCreatorClass(mirrorCreatorClass);
-
-            Class<?> mirrorClass = mMirrorHelper.getMirrorCreatorType(mirrorCreatorClass);
-            mMirrorValidator.validateMirrorClass(mirrorClass);
-
-            Class<?> targetClass = getTargetType(mirrorClass);
-            return createMirrorCreatorProxy(mirrorCreatorClass, mirrorClass, targetClass);
-        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException | ClassNotMirrorCreatorException e) {
+            return createMirrorCreatorProxy(mirrorCreatorClass);
+        } catch (MirrorValidationException | ClassNotMirrorCreatorException e) {
             throw new MirrorCreatorCreationException(e);
         }
-    }
-
-    private Class<?> getTargetType(Class<?> mirrorClass) throws ClassNotFoundException {
-        String targetTypeName = mMirrorHelper.getMirroredTypeName(mirrorClass);
-        return Class.forName(targetTypeName, true, mClassLoader);
     }
 
     private <T> T createMirrorProxy(Class<T> mirrorClass, Class<?> targetClass, Object instance) {
@@ -73,11 +63,11 @@ public class Mirror {
                 new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, instance)));
     }
 
-    private <T> T createMirrorCreatorProxy(Class<T> mirrorCreatorClass, Class<?> mirrorClass, Class<?> targetClass) {
+    private <T> T createMirrorCreatorProxy(Class<T> mirrorCreatorClass) {
         return mirrorCreatorClass.cast(Proxy.newProxyInstance(
                 mirrorCreatorClass.getClassLoader(),
                 new Class[] {mirrorCreatorClass},
-                new MirrorCreatorInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, mirrorClass)));
+                new MirrorCreatorInvocationHandler(mReflectionHelper, mThrowableWrapper, mMirrorHelper, mMirrorValidator, mClassLoader)));
     }
 
     public static Mirror createForClassLoader(ClassLoader classLoader) {
