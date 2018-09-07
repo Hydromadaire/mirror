@@ -7,10 +7,10 @@ import java.lang.reflect.Proxy;
 
 public class Mirror<T> {
 
-    private Class<?> mTargetClass;
-    private Class<T> mMirrorClass;
-    private ReflectionHelper mReflectionHelper;
-    private ThrowableWrapper mThrowableWrapper;
+    private final Class<?> mTargetClass;
+    private final Class<T> mMirrorClass;
+    private final ReflectionHelper mReflectionHelper;
+    private final ThrowableWrapper mThrowableWrapper;
 
     Mirror(Class<T> mirrorClass, Class<?> targetClass, ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper) {
         mMirrorClass = mirrorClass;
