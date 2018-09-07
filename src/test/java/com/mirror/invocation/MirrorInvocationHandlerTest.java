@@ -1,5 +1,9 @@
-package com.mirror;
+package com.mirror.invocation;
 
+import com.mirror.GetField;
+import com.mirror.SetField;
+import com.mirror.WrapException;
+import com.mirror.WrapExceptions;
 import com.mirror.helper.ReflectionHelper;
 import com.mirror.wrapping.ThrowableWrapper;
 import org.junit.Before;
@@ -9,9 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class MirrorInvocationHandlerTest {

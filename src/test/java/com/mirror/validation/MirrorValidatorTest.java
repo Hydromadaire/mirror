@@ -1,10 +1,9 @@
-package com.mirror;
+package com.mirror.validation;
 
 import com.mirror.helper.MirrorHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class MirrorValidatorTest {

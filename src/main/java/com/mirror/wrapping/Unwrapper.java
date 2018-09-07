@@ -1,6 +1,6 @@
 package com.mirror.wrapping;
 
-import com.mirror.MirrorInvocationHandler;
+import com.mirror.invocation.MirrorInvocationHandler;
 import com.mirror.helper.MirrorHelper;
 
 import java.lang.reflect.Array;

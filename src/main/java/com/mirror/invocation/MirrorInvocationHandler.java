@@ -1,5 +1,7 @@
-package com.mirror;
+package com.mirror.invocation;
 
+import com.mirror.GetField;
+import com.mirror.SetField;
 import com.mirror.helper.ReflectionHelper;
 import com.mirror.wrapping.ThrowableWrapper;
 import com.mirror.wrapping.UnwrappingException;
