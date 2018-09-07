@@ -1,7 +1,6 @@
 package com.mirror.helper;
 
 import com.mirror.MirroredClass;
-import com.mirror.MirrorCreator;
 
 public class MirrorHelper {
 
@@ -16,10 +15,6 @@ public class MirrorHelper {
 
         MirroredClass mirroredClass = type.getAnnotation(MirroredClass.class);
         return mirroredClass.value();
-    }
-
-    public boolean isMirrorCreator(Class<?> type) {
-        return type.isAnnotationPresent(MirrorCreator.class);
     }
 
     public Class<?> getMirrorTargetType(Class<?> mirrorClass, ClassLoader classLoader) throws ClassNotFoundException {
