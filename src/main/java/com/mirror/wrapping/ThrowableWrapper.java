@@ -6,26 +6,22 @@ import java.util.Optional;
 
 public class ThrowableWrapper {
 
-    public Optional<Throwable> tryWrapThrowable(Throwable throwable, Class<? extends Throwable> sourceType, Class<? extends Throwable> destType) {
-        if (sourceType.isInstance(throwable)) {
-            try {
-                Optional<Throwable> optionalThrowable = tryWrapThrowableWithCauseConstructor(destType, throwable);
-                if (optionalThrowable.isPresent()) {
-                    return optionalThrowable;
-                }
-
-                optionalThrowable = tryWrapThrowableWithDefaultConstructor(destType, throwable);
-                if (optionalThrowable.isPresent()) {
-                    return optionalThrowable;
-                }
-
-                throw initWrappingException(new ThrowableWrappingException("cannot wrap exception to type: " + destType.getName()), throwable);
-            } catch (ReflectiveOperationException e) {
-                throw initWrappingException(new ThrowableWrappingException(e), throwable);
+    public Throwable wrapThrowable(Throwable throwable, Class<? extends Throwable> destType) {
+        try {
+            Optional<Throwable> optionalThrowable = tryWrapThrowableWithCauseConstructor(destType, throwable);
+            if (optionalThrowable.isPresent()) {
+                return optionalThrowable.get();
             }
-        }
 
-        return Optional.empty();
+            optionalThrowable = tryWrapThrowableWithDefaultConstructor(destType, throwable);
+            if (optionalThrowable.isPresent()) {
+                return optionalThrowable.get();
+            }
+
+            throw initWrappingException(new ThrowableWrappingException("cannot wrap exception to type: " + destType.getName()), throwable);
+        } catch (ReflectiveOperationException e) {
+            throw initWrappingException(new ThrowableWrappingException(e), throwable);
+        }
     }
 
     private Optional<Throwable> tryWrapThrowableWithCauseConstructor(Class<? extends Throwable> destType, Throwable throwable) throws ReflectiveOperationException {

@@ -75,9 +75,10 @@ public class MirrorInvocationHandler implements InvocationHandler {
     }
 
     private void tryThrowWrappedException(WrapException wrapException, Throwable throwable) throws Throwable {
-        Optional<Throwable> optionalThrowable = mThrowableWrapper.tryWrapThrowable(throwable, wrapException.sourceType(), wrapException.destType());
-        if (optionalThrowable.isPresent()) {
-            throw optionalThrowable.get();
+        if (!wrapException.sourceType().isInstance(throwable)) {
+            return;
         }
+
+        throw  mThrowableWrapper.wrapThrowable(throwable, wrapException.destType());
     }
 }
