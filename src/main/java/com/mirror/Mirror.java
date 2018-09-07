@@ -1,6 +1,7 @@
 package com.mirror;
 
-import com.mirror.helper.InvocationHelper;
+import com.mirror.helper.ReflectionHelper;
+import com.mirror.wrapping.ThrowableWrapper;
 
 import java.lang.reflect.Proxy;
 
@@ -8,12 +9,14 @@ public class Mirror<T> {
 
     private Class<?> mTargetClass;
     private Class<T> mMirrorClass;
-    private InvocationHelper mInvocationHelper;
+    private ReflectionHelper mReflectionHelper;
+    private ThrowableWrapper mThrowableWrapper;
 
-    Mirror(Class<T> mirrorClass, Class<?> targetClass, InvocationHelper invocationHelper) {
+    Mirror(Class<T> mirrorClass, Class<?> targetClass, ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper) {
         mMirrorClass = mirrorClass;
         mTargetClass = targetClass;
-        mInvocationHelper = invocationHelper;
+        mReflectionHelper = reflectionHelper;
+        mThrowableWrapper = throwableWrapper;
     }
 
     public T create(Object instance) {
@@ -28,6 +31,6 @@ public class Mirror<T> {
         return (T) Proxy.newProxyInstance(
                 mMirrorClass.getClassLoader(),
                 new Class[] {mMirrorClass},
-                new MirrorInvocationHandler(mInvocationHelper, mTargetClass, instance));
+                new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, mTargetClass, instance));
     }
 }

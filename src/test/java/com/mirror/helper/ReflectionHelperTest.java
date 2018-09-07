@@ -7,15 +7,16 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class InvocationHelperTest {
+public class ReflectionHelperTest {
 
-    private InvocationHelper mInvocationHelper;
+    private ReflectionHelper mReflectionHelper;
     private Wrapper mWrapper;
     private Unwrapper mUnwrapper;
 
@@ -24,7 +25,7 @@ public class InvocationHelperTest {
         mWrapper = mock(Wrapper.class);
         mUnwrapper = mock(Unwrapper.class);
 
-        mInvocationHelper = new InvocationHelper(mWrapper, mUnwrapper);
+        mReflectionHelper = new ReflectionHelper(mWrapper, mUnwrapper);
     }
 
     @Test
@@ -34,7 +35,7 @@ public class InvocationHelperTest {
 
         when(mUnwrapper.unwrap(any())).thenReturn(UNWRAPPED);
 
-        Object[] result = mInvocationHelper.unwrapParameters(PARAMETERS);
+        Object[] result = mReflectionHelper.unwrapParameters(PARAMETERS);
 
         assertArrayEquals(new Object[] {UNWRAPPED, UNWRAPPED}, result);
     }
@@ -49,7 +50,7 @@ public class InvocationHelperTest {
 
         doReturn(UNWRAPPED_TYPE).when(mUnwrapper).unwrapType(any(Class.class));
 
-        Class[] result = mInvocationHelper.unwrapParameterTypes(mockMethod);
+        Class[] result = mReflectionHelper.unwrapParameterTypes(mockMethod);
 
         assertArrayEquals(new Class[] {UNWRAPPED_TYPE, UNWRAPPED_TYPE}, result);
     }
@@ -58,12 +59,12 @@ public class InvocationHelperTest {
     public void findMirrorMethod_privateMethod_returnsMirroredMethod() throws Exception {
         Method RESULT_METHOD = SomeClass.class.getDeclaredMethod("privateNoParamMethod");
 
-        mInvocationHelper = spy(mInvocationHelper);
-        doReturn(RESULT_METHOD.getParameterTypes()).when(mInvocationHelper).unwrapParameterTypes(any(Method.class));
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(RESULT_METHOD.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
 
         Method method = mock(Method.class);
 
-        Method result = mInvocationHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
+        Method result = mReflectionHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
 
         assertEquals(RESULT_METHOD, result);
     }
@@ -72,12 +73,12 @@ public class InvocationHelperTest {
     public void findMirrorMethod_publicMethod_returnsMirroredMethod() throws Exception {
         Method RESULT_METHOD = SomeClass.class.getDeclaredMethod("publicNoParamMethod");
 
-        mInvocationHelper = spy(mInvocationHelper);
-        doReturn(RESULT_METHOD.getParameterTypes()).when(mInvocationHelper).unwrapParameterTypes(any(Method.class));
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(RESULT_METHOD.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
 
         Method method = mock(Method.class);
 
-        Method result = mInvocationHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
+        Method result = mReflectionHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
 
         assertEquals(RESULT_METHOD, result);
     }
@@ -86,12 +87,12 @@ public class InvocationHelperTest {
     public void findMirrorMethod_methodWithOverloads_returnsMirroredMethod() throws Exception {
         Method RESULT_METHOD = SomeClass.class.getDeclaredMethod("withOverload", int.class);
 
-        mInvocationHelper = spy(mInvocationHelper);
-        doReturn(RESULT_METHOD.getParameterTypes()).when(mInvocationHelper).unwrapParameterTypes(any(Method.class));
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(RESULT_METHOD.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
 
         Method method = mock(Method.class);
 
-        Method result = mInvocationHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
+        Method result = mReflectionHelper.findMirrorMethod(method, RESULT_METHOD.getName(), SomeClass.class);
 
         assertEquals(RESULT_METHOD, result);
     }
@@ -108,7 +109,7 @@ public class InvocationHelperTest {
             }
         }).when(mUnwrapper).unwrapType(any(Class.class));
 
-        Method result = mInvocationHelper.findMirrorMethod(DIFFERENT_NAME, RESULT_METHOD.getName(), SomeClass.class);
+        Method result = mReflectionHelper.findMirrorMethod(DIFFERENT_NAME, RESULT_METHOD.getName(), SomeClass.class);
 
         assertEquals(RESULT_METHOD, result);
     }
@@ -117,12 +118,12 @@ public class InvocationHelperTest {
     public void findMirrorMethod_methodFromSuper_returnsMirroredMethod() throws Exception {
         Method RESULT_METHOD = Subclass.class.getMethod("publicNoParamMethod");
 
-        mInvocationHelper = spy(mInvocationHelper);
-        doReturn(RESULT_METHOD.getParameterTypes()).when(mInvocationHelper).unwrapParameterTypes(any(Method.class));
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(RESULT_METHOD.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
 
         Method method = mock(Method.class);
 
-        Method result = mInvocationHelper.findMirrorMethod(method, RESULT_METHOD.getName(), Subclass.class);
+        Method result = mReflectionHelper.findMirrorMethod(method, RESULT_METHOD.getName(), Subclass.class);
 
         assertEquals(RESULT_METHOD, result);
     }
@@ -134,22 +135,83 @@ public class InvocationHelperTest {
         Class<?> RETURN_TYPE = this.getClass();
         Object RETURN = new Object();
 
-        mInvocationHelper = spy(mInvocationHelper);
-        doReturn(PARAMETERS).when(mInvocationHelper).unwrapParameters(any());
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(PARAMETERS).when(mReflectionHelper).unwrapParameters(any());
 
         when(mWrapper.wrap(any(), any())).thenReturn(RETURN);
 
         Method mockMethod = mock(Method.class);
         when(mockMethod.invoke(any(), any())).thenReturn(RETURN);
 
-        mInvocationHelper.invokeMirrorMethod(mockMethod, INSTANCE, RETURN_TYPE, PARAMETERS);
+        mReflectionHelper.invokeMirrorMethod(mockMethod, INSTANCE, RETURN_TYPE, PARAMETERS);
 
         verify(mockMethod, times(1)).setAccessible(true);
         verify(mockMethod, times(1)).invoke(INSTANCE, PARAMETERS);
         verify(mWrapper, times(1)).wrap(RETURN, RETURN_TYPE);
     }
 
+    @Test
+    public void findMirrorField_privateField_returnsField() throws Exception {
+        Field RESULT_FIELD = SomeClass.class.getDeclaredField("field");
+
+        Field result = mReflectionHelper.findMirrorField(RESULT_FIELD.getName(), SomeClass.class);
+
+        assertEquals(RESULT_FIELD, result);
+    }
+
+    @Test(expected = NoSuchFieldException.class)
+    public void findMirrorField_protectedFieldFromSuper_throwsNoSuchFieldException() throws Exception {
+         mReflectionHelper.findMirrorField("superField", Subclass.class);
+    }
+
+    @Test
+    public void findMirrorField_publicFieldFromSuper_returnsField() throws Exception {
+        Field RESULT_FIELD = Subclass.class.getField("publicField");
+
+        Field result = mReflectionHelper.findMirrorField(RESULT_FIELD.getName(), Subclass.class);
+
+        assertEquals(RESULT_FIELD, result);
+    }
+
+    @Test
+    public void getFieldValue_correctParameters_correctFieldAccessDone() throws Exception {
+        Object INSTANCE = new Object();
+        Class<?> RETURN_TYPE = this.getClass();
+        Object RETURN = new Object();
+
+        when(mWrapper.wrap(any(), any())).thenReturn(RETURN);
+
+        Field mockField = mock(Field.class);
+        when(mockField.get(any())).thenReturn(RETURN);
+
+        mReflectionHelper.getFieldValue(mockField, INSTANCE, RETURN_TYPE);
+
+        verify(mockField, times(1)).setAccessible(true);
+        verify(mockField, times(1)).get(INSTANCE);
+        verify(mWrapper, times(1)).wrap(RETURN, RETURN_TYPE);
+    }
+
+    @Test
+    public void setFieldValue_correctParameters_correctFieldAccessDone() throws Exception {
+        Object INSTANCE = new Object();
+        Object VALUE = new Object();
+
+        when(mUnwrapper.unwrap(any())).thenReturn(VALUE);
+
+        Field mockField = mock(Field.class);
+
+        mReflectionHelper.setFieldValue(mockField, INSTANCE, VALUE);
+
+        verify(mockField, times(1)).setAccessible(true);
+        verify(mockField, times(1)).set(INSTANCE, VALUE);
+        verify(mUnwrapper, times(1)).unwrap(VALUE);
+    }
+
     private static class SomeClass {
+
+        private Object field;
+        protected Object superField;
+        public Object publicField;
 
         private void privateNoParamMethod() {
 
