@@ -23,7 +23,7 @@ private class SomeClass {
     }
 }
 ```
-we can create an interface which defines it's method signatures:
+We can create an interface which defines it's method signatures:
 
 ```Java
 @MirroredClass("com.package.SomeClass")
@@ -31,13 +31,16 @@ public interface MirroredSomeClass {
     void hello(); // the signature of the method in SomeClass
 }
 ```
-
-Assuming we have an instance of `SomeClass`, we can create the mirror object like that:
+Next, we need to create a `Mirror` object which will allow us to mirror the hidden class:
 
 ```Java
 ClassLoader classLoaderForHiddenClass = classloader;// classloader which loads hidden class
 Mirror mirror = Mirror.createForClassLoader(classLoaderForHiddenClass);
+```
 
+Assuming we have an instance of `SomeClass`, we can create the mirror object with it:
+
+```Java
 Object someClassInstance = instance;// instance of hidden class
 MirroredSomeClass someClass = mirror.mirror(MirroredSomeClass.class, someClassInstance);
 ```
@@ -51,9 +54,6 @@ public interface SomeClassCreator {
 ```
 Let's initialize the `MirrorCreator` and create the mirror:
 ```Java
-ClassLoader classLoaderForHiddenClass = classloader;// classloader which loads hidden class
-Mirror mirror = Mirror.createForClassLoader(classLoaderForHiddenClass);
-
 SomeClassCreator creator = mirror.createMirrorCreator(SomeClassCreator.class);
 MirroredSomeClass someClass = creator.create("jack");
 ```
