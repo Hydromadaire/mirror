@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public class ThrowableWrapper {
 
-    public Optional<Throwable> tryWrapThrowable(Throwable throwable, Class<? extends Throwable> sourceType, Class<? extends Throwable> destType) throws Throwable {
+    public Optional<Throwable> tryWrapThrowable(Throwable throwable, Class<? extends Throwable> sourceType, Class<? extends Throwable> destType) {
         if (sourceType.isInstance(throwable)) {
             try {
                 Optional<Throwable> optionalThrowable = tryWrapThrowableWithCauseConstructor(destType, throwable);
