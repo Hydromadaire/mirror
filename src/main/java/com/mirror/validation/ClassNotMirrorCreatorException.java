@@ -1,4 +1,4 @@
-package com.mirror;
+package com.mirror.validation;
 
 public class ClassNotMirrorCreatorException extends RuntimeException {
 

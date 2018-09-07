@@ -1,6 +1,6 @@
 package com.mirror.wrapping;
 
-import com.mirror.MirrorInvocationHandler;
+import com.mirror.invocation.MirrorInvocationHandler;
 import com.mirror.helper.MirrorHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

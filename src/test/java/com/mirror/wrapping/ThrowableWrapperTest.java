@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 
 public class ThrowableWrapperTest {
 
-
     @Test
     public void wrapException_destTypeHasPublicCauseConstructor_returnsWrappedException() throws Throwable {
         ThrowableWrapper throwableWrapper = new ThrowableWrapper();

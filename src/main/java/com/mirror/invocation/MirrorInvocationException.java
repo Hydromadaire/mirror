@@ -1,4 +1,4 @@
-package com.mirror;
+package com.mirror.invocation;
 
 public class MirrorInvocationException extends RuntimeException {
 

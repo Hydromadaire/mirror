@@ -1,45 +1,30 @@
 package com.mirror.wrapping;
 
-import com.mirror.WrapException;
-import com.mirror.WrapExceptions;
+import com.mirror.MirroredException;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 
 public class ThrowableWrapper {
 
-    public void tryMirrorThrowable(Throwable throwable, Method method) throws Throwable {
-        if (method.isAnnotationPresent(WrapExceptions.class)) {
-            WrapExceptions wrapExceptions = method.getAnnotation(WrapExceptions.class);
-            for (WrapException wrapException : wrapExceptions.value()) {
-                tryThrowWrappedException(wrapException, throwable);
+    public Optional<Throwable> tryWrapThrowable(Throwable throwable, Class[] exceptionTypes, ClassLoader classLoader) throws Throwable {
+        for (Class<?> exceptionType : exceptionTypes) {
+            if (exceptionType.isInstance(throwable)) {
+                return Optional.of(throwable);
+            }
+
+            if (exceptionType.isAnnotationPresent(MirroredException.class)) {
+                MirroredException mirroredException = exceptionType.getAnnotation(MirroredException.class);
+                Class<?> throwableType = Class.forName(mirroredException.value(), true, classLoader);
+
+                if (throwableType.isInstance(throwable)) {
+                    return Optional.of(wrapThrowable(throwable, (Class<? extends Throwable>) exceptionType));
+                }
             }
         }
 
-        if (method.isAnnotationPresent(WrapException.class)) {
-            WrapException wrapException = method.getAnnotation(WrapException.class);
-            tryThrowWrappedException(wrapException, throwable);
-        }
-
-        if (throwable instanceof RuntimeException || throwable instanceof Error) {
-            throw throwable;
-        }
-
-        for (Class<?> declaredException : method.getExceptionTypes()) {
-            if (declaredException.isInstance(throwable)) {
-                throw throwable;
-            }
-        }
-    }
-
-    private void tryThrowWrappedException(WrapException wrapException, Throwable throwable) throws Throwable {
-        if (!wrapException.sourceType().isInstance(throwable)) {
-            return;
-        }
-
-        throw wrapThrowable(throwable, wrapException.destType());
+        return Optional.empty();
     }
 
     public Throwable wrapThrowable(Throwable throwable, Class<? extends Throwable> destType) {
