@@ -28,9 +28,9 @@ public class Mirror<T> {
     }
 
     private T createProxy(Object instance) {
-        return (T) Proxy.newProxyInstance(
+        return mMirrorClass.cast(Proxy.newProxyInstance(
                 mMirrorClass.getClassLoader(),
                 new Class[] {mMirrorClass},
-                new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, mTargetClass, instance));
+                new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, mTargetClass, instance)));
     }
 }
