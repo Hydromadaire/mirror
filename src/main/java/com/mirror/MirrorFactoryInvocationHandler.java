@@ -10,14 +10,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class ObjectFactoryInvocationHandler implements InvocationHandler {
+public class MirrorFactoryInvocationHandler implements InvocationHandler {
 
     private final ReflectionHelper mReflectionHelper;
     private final ThrowableWrapper mThrowableWrapper;
     private final Class<?> mTargetClass;
     private final Class<?> mMirrorClass;
 
-    public ObjectFactoryInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Class<?> mirrorClass) {
+    public MirrorFactoryInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Class<?> mirrorClass) {
         mReflectionHelper = reflectionHelper;
         mThrowableWrapper = throwableWrapper;
         mTargetClass = targetClass;
