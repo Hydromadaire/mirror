@@ -1,22 +1,23 @@
 package com.mirror;
 
 import com.mirror.helper.InvocationHelper;
+import com.mirror.wrapping.ThrowableWrapper;
 import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.WrappingException;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
+import java.util.Optional;
 
 public class MirrorInvocationHandler implements InvocationHandler {
 
     private final InvocationHelper mInvocationHelper;
+    private final ThrowableWrapper mThrowableWrapper;
     private final Class<?> mTargetClass;
     private final Object mTargetInstance;
 
-    public MirrorInvocationHandler(InvocationHelper invocationHelper, Class<?> targetClass, Object targetInstance) {
+    public MirrorInvocationHandler(InvocationHelper invocationHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Object targetInstance) {
         mInvocationHelper = invocationHelper;
+        mThrowableWrapper = throwableWrapper;
         mTargetClass = targetClass;
         mTargetInstance = targetInstance;
     }
@@ -44,7 +45,40 @@ public class MirrorInvocationHandler implements InvocationHandler {
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
+            tryMirrorThrowable(e.getCause(), method);
             throw e.getCause();
         }
+    }
+
+    private void tryMirrorThrowable(Throwable throwable, Method method) throws Throwable {
+        if (method.isAnnotationPresent(WrapExceptions.class)) {
+            WrapExceptions wrapExceptions = method.getAnnotation(WrapExceptions.class);
+            for (WrapException wrapException : wrapExceptions.value()) {
+                tryThrowWrappedException(wrapException, throwable);
+            }
+        }
+
+        if (method.isAnnotationPresent(WrapException.class)) {
+            WrapException wrapException = method.getAnnotation(WrapException.class);
+            tryThrowWrappedException(wrapException, throwable);
+        }
+
+        if (throwable instanceof RuntimeException || throwable instanceof Error) {
+            throw throwable;
+        }
+
+        for (Class<?> declaredException : method.getExceptionTypes()) {
+            if (declaredException.isInstance(throwable)) {
+                throw throwable;
+            }
+        }
+    }
+
+    private void tryThrowWrappedException(WrapException wrapException, Throwable throwable) throws Throwable {
+        if (!wrapException.sourceType().isInstance(throwable)) {
+            return;
+        }
+
+        throw  mThrowableWrapper.wrapThrowable(throwable, wrapException.destType());
     }
 }
