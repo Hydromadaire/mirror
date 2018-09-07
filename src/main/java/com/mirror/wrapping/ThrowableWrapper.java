@@ -26,7 +26,7 @@ public class ThrowableWrapper {
 
     private Optional<Throwable> tryWrapThrowableWithCauseConstructor(Class<? extends Throwable> destType, Throwable throwable) throws ReflectiveOperationException {
         try {
-            Constructor<? extends Throwable> constructor = destType.getConstructor(Throwable.class);
+            Constructor<? extends Throwable> constructor = destType.getDeclaredConstructor(Throwable.class);
 
             if (!Modifier.isPublic(constructor.getModifiers())) {
                 constructor.setAccessible(true);
@@ -40,7 +40,7 @@ public class ThrowableWrapper {
 
     private Optional<Throwable> tryWrapThrowableWithDefaultConstructor(Class<? extends Throwable> destType, Throwable throwable) throws ReflectiveOperationException {
         try {
-            Constructor<? extends Throwable> constructor = destType.getConstructor();
+            Constructor<? extends Throwable> constructor = destType.getDeclaredConstructor();
 
             if (!Modifier.isPublic(constructor.getModifiers())) {
                 constructor.setAccessible(true);
