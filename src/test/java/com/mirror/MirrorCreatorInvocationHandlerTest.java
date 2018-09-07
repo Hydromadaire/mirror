@@ -68,10 +68,5 @@ public class MirrorCreatorInvocationHandlerTest {
         public void someMethod() {
 
         }
-
-        @MirrorCreator
-        public void voidCreate() {
-
-        }
     }
 }
