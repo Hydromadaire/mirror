@@ -18,12 +18,12 @@ public class MirrorHelper {
         return mirroredClass.value();
     }
 
-    public boolean isObjectFactory(Class<?> type) {
+    public boolean isMirrorFactory(Class<?> type) {
         return type.isAnnotationPresent(MirrorFactory.class);
     }
 
-    public Class<?> getObjectFactoryType(Class<?> type) {
-        if (!isObjectFactory(type)) {
+    public Class<?> getMirrorFactoryType(Class<?> type) {
+        if (!isMirrorFactory(type)) {
             throw new IllegalArgumentException("type not a object factory: " + type.getName());
         }
 

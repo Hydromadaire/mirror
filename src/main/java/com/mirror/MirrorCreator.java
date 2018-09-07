@@ -42,16 +42,16 @@ public class MirrorCreator {
         }
     }
 
-    public <T> T createObjectFactory(Class<T> objectCreatorClass) throws MirrorFactoryCreationException {
+    public <T> T createMirrorFactory(Class<T> mirrorFactoryClass) throws MirrorFactoryCreationException {
         try {
-            mMirrorValidator.validateObjectFactoryClass(objectCreatorClass);
+            mMirrorValidator.validateMirrorFactoryClass(mirrorFactoryClass);
 
-            Class<?> mirrorClass = mMirrorHelper.getObjectFactoryType(objectCreatorClass);
+            Class<?> mirrorClass = mMirrorHelper.getMirrorFactoryType(mirrorFactoryClass);
             mMirrorValidator.validateMirrorClass(mirrorClass);
 
             Class<?> targetClass = getTargetType(mirrorClass);
-            return createObjectFactoryProxy(objectCreatorClass, mirrorClass, targetClass);
-        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException | ClassNotObjectFactoryException e) {
+            return createMirrorFactoryProxy(mirrorFactoryClass, mirrorClass, targetClass);
+        } catch (ClassNotFoundException | ClassNotMirrorException | MirrorValidationException | ClassNotMirrorFactoryException e) {
             throw new MirrorFactoryCreationException(e);
         }
     }
@@ -61,10 +61,10 @@ public class MirrorCreator {
         return Class.forName(targetTypeName, true, mClassLoader);
     }
 
-    private <T> T createObjectFactoryProxy(Class<T> objectCreatorClass, Class<?> mirrorClass, Class<?> targetClass) {
-        return objectCreatorClass.cast(Proxy.newProxyInstance(
-                objectCreatorClass.getClassLoader(),
-                new Class[] {objectCreatorClass},
+    private <T> T createMirrorFactoryProxy(Class<T> mirrorFactoryClass, Class<?> mirrorClass, Class<?> targetClass) {
+        return mirrorFactoryClass.cast(Proxy.newProxyInstance(
+                mirrorFactoryClass.getClassLoader(),
+                new Class[] {mirrorFactoryClass},
                 new MirrorFactoryInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, mirrorClass)));
     }
 
