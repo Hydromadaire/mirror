@@ -4,10 +4,8 @@ import com.mirror.helper.InvocationHelper;
 import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.WrappingException;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
+import java.util.Optional;
 
 public class MirrorInvocationHandler implements InvocationHandler {
 
@@ -35,23 +33,28 @@ public class MirrorInvocationHandler implements InvocationHandler {
     }
 
     public Object invokeMethod(Method method, Object[] args) throws Throwable {
-        Method mirroredMethod = null;
-
         try {
             String mirroredMethodName = method.getName();
-            mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
+            Method mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
             return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, method.getReturnType(), args);
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
-            tryMirrorThrowable(e.getCause(), mirroredMethod);
+            tryMirrorThrowable(e.getCause(), method);
             throw e.getCause();
         }
     }
 
     private void tryMirrorThrowable(Throwable throwable, Method mirrorMethod) throws Throwable {
+        if (mirrorMethod.isAnnotationPresent(WrapExceptions.class)) {
+            WrapExceptions wrapExceptions = mirrorMethod.getAnnotation(WrapExceptions.class);
+            for (WrapException wrapException : wrapExceptions.value()) {
+                tryThrowWrappedException(throwable, wrapException.sourceType(), wrapException.destType());
+            }
+        }
+
         if (mirrorMethod.isAnnotationPresent(WrapException.class)) {
             WrapException wrapException = mirrorMethod.getAnnotation(WrapException.class);
             tryThrowWrappedException(throwable, wrapException.sourceType(), wrapException.destType());
@@ -71,9 +74,17 @@ public class MirrorInvocationHandler implements InvocationHandler {
     private void tryThrowWrappedException(Throwable throwable, Class<? extends Throwable> sourceType, Class<? extends Throwable> destType) throws Throwable {
         if (sourceType.isInstance(throwable)) {
             try {
-                Throwable wrapThrowable = destType.newInstance();
-                wrapThrowable.initCause(throwable);
-                throwable = wrapThrowable;
+                Optional<Throwable> optionalThrowable = tryWrapExceptionWithThrowableConstructor(destType, throwable);
+                if (!optionalThrowable.isPresent()) {
+                    optionalThrowable = tryWrapExceptionWithDefaultConstructor(destType, throwable);
+                }
+                if (!optionalThrowable.isPresent()) {
+                    MirrorInvocationException invocationException = new MirrorInvocationException("cannot wrap exception to type: " + destType.getName());
+                    invocationException.addSuppressed(throwable);
+                    throw invocationException;
+                }
+
+                throwable = optionalThrowable.get();
             } catch (ReflectiveOperationException e) {
                 MirrorInvocationException invocationException = new MirrorInvocationException(e);
                 invocationException.addSuppressed(throwable);
@@ -81,6 +92,37 @@ public class MirrorInvocationHandler implements InvocationHandler {
             }
 
             throw throwable;
+        }
+    }
+
+    private Optional<Throwable> tryWrapExceptionWithThrowableConstructor(Class<? extends Throwable> destType, Throwable throwable) throws ReflectiveOperationException {
+        try {
+            Constructor<? extends Throwable> constructor = destType.getConstructor(Throwable.class);
+
+            if (!Modifier.isPublic(constructor.getModifiers())) {
+                constructor.setAccessible(true);
+            }
+
+            return Optional.of(constructor.newInstance(throwable));
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Throwable> tryWrapExceptionWithDefaultConstructor(Class<? extends Throwable> destType, Throwable throwable) throws ReflectiveOperationException {
+        try {
+            Constructor<? extends Throwable> constructor = destType.getConstructor();
+
+            if (!Modifier.isPublic(constructor.getModifiers())) {
+                constructor.setAccessible(true);
+            }
+
+            Throwable wrapper = constructor.newInstance();
+            wrapper.initCause(throwable);
+
+            return Optional.of(wrapper);
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
         }
     }
 }

@@ -121,6 +121,16 @@ public class MirrorInvocationHandlerTest {
         mMirrorInvocationHandler.invoke(null, METHOD, null);
     }
 
+    @Test(expected = InvocationTargetException.class)
+    public void invoke_wrappableExceptionThrownFromMethodWithMultiWrappables_wrapExceptionCorrectly() throws Throwable {
+        Method METHOD = TargetClass.class.getDeclaredMethod("wrapExceptions");
+
+        when(mInvocationHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
+        when(mInvocationHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new IllegalAccessException()));
+
+        mMirrorInvocationHandler.invoke(null, METHOD, null);
+    }
+
     private static class TargetClass {
 
         public void publicNoParam() {
@@ -145,6 +155,14 @@ public class MirrorInvocationHandlerTest {
 
         @WrapException(sourceType = IllegalArgumentException.class, destType = InterruptedException.class)
         public void wrapException() {
+
+        }
+
+        @WrapExceptions({
+                @WrapException(sourceType = IllegalArgumentException.class, destType = InterruptedException.class),
+                @WrapException(sourceType = IllegalAccessException.class, destType = InvocationTargetException.class)
+        })
+        public void wrapExceptions() {
 
         }
     }
