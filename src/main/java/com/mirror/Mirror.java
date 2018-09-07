@@ -109,9 +109,6 @@ import java.lang.reflect.Proxy;
  *          // where MyException is define with similarly to this:
  *          @MirroredException("com.package.SomeException")
  *          public class MyException extends Exception {
- *              public MyException() {
- *
- *              }
  *          }
  *     }</pre>
  *
