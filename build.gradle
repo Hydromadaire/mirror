@@ -17,11 +17,18 @@ dependencies {
     testCompile group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
 }
 
-task sources(type: Jar, dependsOn: 'classes') {
+task createSources(type: Jar, dependsOn: 'classes') {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
 
-artifacts {
-    archives sources
+task createJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
 }
+
+artifacts {
+    archives createSources
+    archives createJavadoc
+}
+
