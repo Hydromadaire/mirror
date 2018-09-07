@@ -142,7 +142,7 @@ public class Mirror {
     private final ThrowableWrapper mThrowableWrapper;
     private final MirrorValidator mMirrorValidator;
 
-    public Mirror(ClassLoader classLoader, MirrorHelper mirrorHelper, ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, MirrorValidator mirrorValidator) {
+    Mirror(ClassLoader classLoader, MirrorHelper mirrorHelper, ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, MirrorValidator mirrorValidator) {
         mClassLoader = classLoader;
         mMirrorHelper = mirrorHelper;
         mReflectionHelper = reflectionHelper;
