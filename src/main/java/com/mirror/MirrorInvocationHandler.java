@@ -1,22 +1,21 @@
 package com.mirror;
 
-import com.mirror.helper.InvocationHelper;
+import com.mirror.helper.ReflectionHelper;
 import com.mirror.wrapping.ThrowableWrapper;
 import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.WrappingException;
 
 import java.lang.reflect.*;
-import java.util.Optional;
 
 public class MirrorInvocationHandler implements InvocationHandler {
 
-    private final InvocationHelper mInvocationHelper;
+    private final ReflectionHelper mReflectionHelper;
     private final ThrowableWrapper mThrowableWrapper;
     private final Class<?> mTargetClass;
     private final Object mTargetInstance;
 
-    public MirrorInvocationHandler(InvocationHelper invocationHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Object targetInstance) {
-        mInvocationHelper = invocationHelper;
+    public MirrorInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Object targetInstance) {
+        mReflectionHelper = reflectionHelper;
         mThrowableWrapper = throwableWrapper;
         mTargetClass = targetClass;
         mTargetInstance = targetInstance;
@@ -32,16 +31,53 @@ public class MirrorInvocationHandler implements InvocationHandler {
             args = new Object[0];
         }
 
+        if (method.isAnnotationPresent(GetField.class)) {
+            GetField getField = method.getAnnotation(GetField.class);
+            return getFieldValue(getField.value(), method.getReturnType());
+        }
+
+        if (method.isAnnotationPresent(SetField.class)) {
+            if (args.length != 1) {
+                throw new MirrorFieldAccessException("Cannot set field with no argument");
+            }
+
+            SetField setField = method.getAnnotation(SetField.class);
+            setFieldValue(setField.value(), args[0]);
+            return null;
+        }
+
         return invokeMethod(method, args);
+    }
+
+    private Object getFieldValue(String fieldName, Class<?> fieldReturnType) {
+        try {
+            Field field = mReflectionHelper.findMirrorField(fieldName, mTargetClass);
+
+            Object instance = Modifier.isStatic(field.getModifiers()) ? null : mTargetInstance;
+            return mReflectionHelper.getFieldValue(field, instance, fieldReturnType);
+        } catch (ReflectiveOperationException | WrappingException e) {
+            throw new MirrorFieldAccessException(e);
+        }
+    }
+
+    private void setFieldValue(String fieldName, Object value) {
+        try {
+            Field field = mReflectionHelper.findMirrorField(fieldName, mTargetClass);
+
+            Object instance = Modifier.isStatic(field.getModifiers()) ? null : mTargetInstance;
+            mReflectionHelper.setFieldValue(field, instance, value);
+        } catch (ReflectiveOperationException | UnwrappingException e) {
+            throw new MirrorFieldAccessException(e);
+        }
     }
 
     public Object invokeMethod(Method method, Object[] args) throws Throwable {
         try {
             String mirroredMethodName = method.getName();
-            Method mirroredMethod = mInvocationHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
+            Method mirroredMethod = mReflectionHelper.findMirrorMethod(method, mirroredMethodName, mTargetClass);
 
             Object instance = Modifier.isStatic(mirroredMethod.getModifiers()) ? null : mTargetInstance;
-            return mInvocationHelper.invokeMirrorMethod(mirroredMethod, instance, method.getReturnType(), args);
+            return mReflectionHelper.invokeMirrorMethod(mirroredMethod, instance, method.getReturnType(), args);
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
