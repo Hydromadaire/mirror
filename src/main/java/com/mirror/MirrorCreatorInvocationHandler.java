@@ -37,7 +37,7 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
             return createMirror(method.getReturnType(), method, args);
         }
 
-        throw new MirrorInvocationException(String.format("method %s has no invocation", method.getName()));
+        throw new MirrorCreationByProxyException(String.format("method %s has no invocation", method.getName()));
     }
 
     private Object createMirror(Class<?> mirrorClass, Method method, Object[] args) throws Throwable {
@@ -47,7 +47,7 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
 
             return invokeConstructor(mirrorClass, targetClass, method, args);
         } catch (ClassNotFoundException e) {
-            throw new MirrorInvocationException(new MirrorCreationException(e));
+            throw new MirrorCreationByProxyException(e);
         }
     }
 
@@ -56,7 +56,7 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
             Constructor<?> constructor = mReflectionHelper.findMirrorConstructor(method, targetClass);
             return mReflectionHelper.invokeMirrorConstructor(constructor, mirrorClass, args);
         } catch (UnwrappingException | WrappingException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
-            throw new MirrorInvocationException(e);
+            throw new MirrorCreationByProxyException(e);
         } catch (InvocationTargetException e) {
             mThrowableWrapper.tryMirrorThrowable(e.getCause(), method);
             throw e.getCause();
