@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -207,6 +208,54 @@ public class ReflectionHelperTest {
         verify(mUnwrapper, times(1)).unwrap(VALUE);
     }
 
+
+    @Test
+    public void findMirrorConstructor_publicConstructor_returnsMirroredConstructor() throws Exception {
+        Constructor<?> CONSTRUCTOR = ClassConstructor.class.getDeclaredConstructor();
+        Method MIRROR_METHOD = Subclass.class.getMethod("publicNoParamMethod");
+
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(CONSTRUCTOR.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
+
+        Constructor result = mReflectionHelper.findMirrorConstructor(MIRROR_METHOD, ClassConstructor.class);
+
+        assertEquals(CONSTRUCTOR, result);
+    }
+
+    @Test
+    public void findMirrorConstructor_constructorWithOverloads_returnsMirroredConstructor() throws Exception {
+        Constructor<?> CONSTRUCTOR = ClassOverloadsConstructor.class.getDeclaredConstructor(int.class);
+        Method MIRROR_METHOD = SomeClass.class.getDeclaredMethod("withOverload", int.class);
+
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(CONSTRUCTOR.getParameterTypes()).when(mReflectionHelper).unwrapParameterTypes(any(Method.class));
+
+        Constructor result = mReflectionHelper.findMirrorConstructor(MIRROR_METHOD, ClassOverloadsConstructor.class);
+
+        assertEquals(CONSTRUCTOR, result);
+    }
+
+    @Test
+    public void invokeConstructorMethod_correctParameters_correctInvocationDone() throws Exception {
+        Object[] PARAMETERS = new Object[0];
+        Class<?> RETURN_TYPE = this.getClass();
+        Object RETURN = new Object();
+
+        mReflectionHelper = spy(mReflectionHelper);
+        doReturn(PARAMETERS).when(mReflectionHelper).unwrapParameters(any());
+
+        when(mWrapper.wrap(any(), any())).thenReturn(RETURN);
+
+        Constructor mockConstructor = mock(Constructor.class);
+        when(mockConstructor.newInstance(any())).thenReturn(RETURN);
+
+        mReflectionHelper.invokeMirrorConstructor(mockConstructor, RETURN_TYPE, PARAMETERS);
+
+        verify(mockConstructor, times(1)).setAccessible(true);
+        verify(mockConstructor, times(1)).newInstance(PARAMETERS);
+        verify(mWrapper, times(1)).wrap(RETURN, RETURN_TYPE);
+    }
+
     private static class SomeClass {
 
         private Object field;
@@ -236,5 +285,25 @@ public class ReflectionHelperTest {
 
     private static class Subclass extends SomeClass {
 
+    }
+
+    private static class ClassConstructor {
+        public ClassConstructor() {
+
+        }
+    }
+
+    private static class ClassOverloadsConstructor {
+        public ClassOverloadsConstructor() {
+
+        }
+
+        public ClassOverloadsConstructor(int a) {
+
+        }
+
+        public ClassOverloadsConstructor(double b, int a) {
+
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.mirror.wrapping;
 
 import com.mirror.Mirror;
-import com.mirror.MirrorCreator;
 import com.mirror.helper.MirrorHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,14 +16,14 @@ public class WrapperTest {
 
     private Wrapper mWrapper;
     private MirrorHelper mMirrorHelper;
-    private MirrorCreator mMirrorCreator;
+    private Mirror mMirror;
 
     @Before
     public void setUp() throws Exception {
-        mMirrorCreator = mock(MirrorCreator.class);
+        mMirror = mock(Mirror.class);
         mMirrorHelper = mock(MirrorHelper.class);
 
-        mWrapper = new Wrapper(mMirrorHelper, mMirrorCreator);
+        mWrapper = new Wrapper(mMirrorHelper, mMirror);
     }
 
     @Test
@@ -35,17 +34,13 @@ public class WrapperTest {
 
         when(mMirrorHelper.isMirror(any(Class.class))).thenReturn(true);
 
-        Mirror mockMirror = mock(Mirror.class);
-        when(mMirrorCreator.createMirror(any(Class.class))).thenReturn(mockMirror);
-
-        when(mockMirror.create(any())).thenReturn(CREATED_OBJECT);
+        when(mMirror.mirror(any(), any())).thenReturn(CREATED_OBJECT);
 
         Object result = mWrapper.wrapObject(SOURCE_OBJECT, TARGET_MIRROR_CLASS);
         assertEquals(CREATED_OBJECT, result);
 
         verify(mMirrorHelper, times(1)).isMirror(TARGET_MIRROR_CLASS);
-        verify(mMirrorCreator, times(1)).createMirror(TARGET_MIRROR_CLASS);
-        verify(mockMirror, times(1)).create(SOURCE_OBJECT);
+        verify(mMirror, times(1)).mirror(TARGET_MIRROR_CLASS, SOURCE_OBJECT);
     }
 
     @Test
@@ -69,10 +64,7 @@ public class WrapperTest {
 
         when(mMirrorHelper.isMirror(any(Class.class))).thenReturn(true);
 
-        Mirror mockMirror = mock(Mirror.class);
-        when(mMirrorCreator.createMirror(any(Class.class))).thenReturn(mockMirror);
-
-        when(mockMirror.create(any())).thenReturn(CREATED_OBJECT);
+        when(mMirror.mirror(any(), any())).thenReturn(CREATED_OBJECT);
 
         Object result = mWrapper.wrapArray(ARRAY, TARGET_MIRROR_CLASS);
         Object[] arrResult = (Object[]) result;
