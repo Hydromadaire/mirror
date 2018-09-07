@@ -8,6 +8,7 @@ import com.mirror.wrapping.UnwrappingException;
 import com.mirror.wrapping.WrappingException;
 
 import java.lang.reflect.*;
+import java.util.Optional;
 
 public class MirrorInvocationHandler implements InvocationHandler {
 
@@ -15,12 +16,14 @@ public class MirrorInvocationHandler implements InvocationHandler {
     private final ThrowableWrapper mThrowableWrapper;
     private final Class<?> mTargetClass;
     private final Object mTargetInstance;
+    private final ClassLoader mClassLoader;
 
-    public MirrorInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Object targetInstance) {
+    public MirrorInvocationHandler(ReflectionHelper reflectionHelper, ThrowableWrapper throwableWrapper, Class<?> targetClass, Object targetInstance, ClassLoader classLoader) {
         mReflectionHelper = reflectionHelper;
         mThrowableWrapper = throwableWrapper;
         mTargetClass = targetClass;
         mTargetInstance = targetInstance;
+        mClassLoader = classLoader;
     }
 
     public Object getTargetInstance() {
@@ -83,7 +86,11 @@ public class MirrorInvocationHandler implements InvocationHandler {
         } catch (NoSuchMethodException | IllegalAccessException | UnwrappingException | WrappingException e) {
             throw new MirrorInvocationException(e);
         } catch (InvocationTargetException e) {
-            mThrowableWrapper.tryMirrorThrowable(e.getCause(), method);
+            Optional<Throwable> optionalThrowable = mThrowableWrapper.tryWrapThrowable(e.getCause(), method.getExceptionTypes(), mClassLoader);
+            if (optionalThrowable.isPresent()) {
+                throw optionalThrowable.get();
+            }
+
             throw e.getCause();
         }
     }

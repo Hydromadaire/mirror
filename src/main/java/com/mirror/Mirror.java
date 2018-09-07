@@ -179,7 +179,7 @@ public class Mirror {
         return mirrorClass.cast(Proxy.newProxyInstance(
                 mirrorClass.getClassLoader(),
                 new Class[] {mirrorClass},
-                new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, instance)));
+                new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, targetClass, instance, mClassLoader)));
     }
 
     private <T> T createMirrorCreatorProxy(Class<T> mirrorCreatorClass) {

@@ -2,8 +2,6 @@ package com.mirror.invocation;
 
 import com.mirror.GetField;
 import com.mirror.SetField;
-import com.mirror.WrapException;
-import com.mirror.WrapExceptions;
 import com.mirror.helper.ReflectionHelper;
 import com.mirror.wrapping.ThrowableWrapper;
 import org.junit.Before;
@@ -30,8 +28,9 @@ public class MirrorInvocationHandlerTest {
         mThrowableWrapper = new ThrowableWrapper();
         mTargetClass = TargetClass.class;
         mTargetInstance = mock(TargetClass.class);
+        ClassLoader classLoader = this.getClass().getClassLoader();
 
-        mMirrorInvocationHandler = new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, mTargetClass, mTargetInstance);
+        mMirrorInvocationHandler = new MirrorInvocationHandler(mReflectionHelper, mThrowableWrapper, mTargetClass, mTargetInstance, classLoader);
     }
 
     @Test
@@ -118,26 +117,6 @@ public class MirrorInvocationHandlerTest {
         mMirrorInvocationHandler.invoke(null, METHOD, null);
     }
 
-    @Test(expected = InterruptedException.class)
-    public void invoke_wrappableExceptionThrownFromMethod_wrapExceptionCorrectly() throws Throwable {
-        Method METHOD = TargetClass.class.getDeclaredMethod("wrapException");
-
-        when(mReflectionHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
-        when(mReflectionHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new IllegalArgumentException()));
-
-        mMirrorInvocationHandler.invoke(null, METHOD, null);
-    }
-
-    @Test(expected = InvocationTargetException.class)
-    public void invoke_wrappableExceptionThrownFromMethodWithMultiWrappables_wrapExceptionCorrectly() throws Throwable {
-        Method METHOD = TargetClass.class.getDeclaredMethod("wrapExceptions");
-
-        when(mReflectionHelper.findMirrorMethod(any(), anyString(), any())).thenReturn(METHOD);
-        when(mReflectionHelper.invokeMirrorMethod(any(), any(), any(), any())).thenThrow(new InvocationTargetException(new IllegalAccessException()));
-
-        mMirrorInvocationHandler.invoke(null, METHOD, null);
-    }
-
     @Test
     public void invoke_methodIsGetField_returnsFieldValue() throws Throwable {
         Method METHOD = TargetClass.class.getDeclaredMethod("getField");
@@ -186,19 +165,6 @@ public class MirrorInvocationHandlerTest {
 
         public Object publicExceptionDeclared() throws InterruptedException {
             return null;
-        }
-
-        @WrapException(sourceType = IllegalArgumentException.class, destType = InterruptedException.class)
-        public void wrapException() {
-
-        }
-
-        @WrapExceptions({
-                @WrapException(sourceType = IllegalArgumentException.class, destType = InterruptedException.class),
-                @WrapException(sourceType = IllegalAccessException.class, destType = InvocationTargetException.class)
-        })
-        public void wrapExceptions() {
-
         }
 
         @GetField("field")

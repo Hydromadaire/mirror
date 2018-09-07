@@ -12,6 +12,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 public class MirrorCreatorInvocationHandler implements InvocationHandler {
 
@@ -60,7 +61,11 @@ public class MirrorCreatorInvocationHandler implements InvocationHandler {
         } catch (UnwrappingException | WrappingException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
             throw new MirrorCreationByProxyException(e);
         } catch (InvocationTargetException e) {
-            mThrowableWrapper.tryMirrorThrowable(e.getCause(), method);
+            Optional<Throwable> optionalThrowable = mThrowableWrapper.tryWrapThrowable(e.getCause(), method.getExceptionTypes(), mClassLoader);
+            if (optionalThrowable.isPresent()) {
+                throw optionalThrowable.get();
+            }
+
             throw e.getCause();
         }
     }
